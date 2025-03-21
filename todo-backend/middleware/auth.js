@@ -1,22 +1,25 @@
 const jwt = require('jsonwebtoken');
 
 module.exports = (req, res, next) => {
-    const token = req.header('Authorization');
-    console.log("Received Token:", token); // 🛠 这里会打印请求头的 token
+  const authHeader = req.headers.authorization;
+  
+  console.log("🔥 Received Auth Header:", authHeader); // 检查 Authorization 头部是否正确
 
-    if (!token) return res.status(401).json({ message: '未授权访问' });
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ code: "AUTH_FAILED", message: "身份验证失败，请重新登录" });
+  }
 
-    try {
-        const tokenWithoutBearer = token.replace("Bearer ", "").trim();
-        console.log("Processed Token:", tokenWithoutBearer); // 🛠 这里会打印去掉 "Bearer " 的 token
+  const token = authHeader.split(' ')[1];
 
-        const decoded = jwt.verify(tokenWithoutBearer, process.env.JWT_SECRET);
-        req.user = decoded;
-        console.log("Decoded Token:", decoded); // 🛠 这里会打印解码后的 token 数据
-
-        next();
-    } catch (err) {
-        console.error("JWT Verification Error:", err);
-        res.status(400).json({ message: '无效的 token' });
-    }
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    
+    console.log("🔥 Decoded Token:", decoded); // 调试解码后的 Token 内容
+    
+    req.user = decoded;
+    next();
+  } catch (error) {
+    console.error("🔥 JWT Verification Error:", error.message);
+    return res.status(401).json({ code: "AUTH_FAILED", message: "身份验证失败，请重新登录" });
+  }
 };

@@ -5,25 +5,31 @@ require('dotenv').config();
 
 const app = express();
 
-
-app.use(express.json());
+// 中间件
 app.use(cors());
+app.use(express.json());
 
-mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
-    .then(() => console.log("✅ MongoDB Connected Successfully"))
-    .catch(err => console.error("❌ MongoDB Connection Error:", err));
+// 数据库连接
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => console.log("✅ MongoDB Connected"))
+  .catch(err => console.error("❌ Connection Error:", err));
 
-app.get('/', (req, res) => {
-    res.send("Server is running and MongoDB is connected!");
-});
-
-app.listen(5000, () => console.log('🚀 Server running on port 5000'));
-
-const User = require('./models/User');
-const authRoutes = require('./routes/auth');  // 引入用户认证路由
-app.use('/api', authRoutes);  // 注册路由
-
+// 路由
+const authRoutes = require('./routes/auth');
 const taskRoutes = require('./routes/tasks');
+app.use('/api/auth', authRoutes);
 app.use('/api/tasks', taskRoutes);
 
+// 健康检查
+app.get('/health', (req, res) => {
+  res.json({
+    status: 'ok',
+    database: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected'
+  });
+});
 
+// 启动服务器
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+});

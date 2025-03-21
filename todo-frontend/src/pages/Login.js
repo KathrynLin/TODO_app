@@ -1,30 +1,54 @@
 import { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
-import { AuthContext } from "../context/AuthContext"; // 确保 context 存在
+import { AuthContext } from "../context/AuthContext";
 import axios from "axios";
 
 function Login() {
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState(""); 
   const [password, setPassword] = useState("");
-  const { login } = useContext(AuthContext) || { login: () => {} }; // 预防 context 为空
+  const [error, setError] = useState("");
+  const { login } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const handleLogin = async () => {
+    setError("");
     try {
-      const res = await axios.post("http://localhost:5000/api/login", { username, password });
+      const res = await axios.post("http://localhost:5000/api/auth/login", {
+        email, 
+        password,
+      });
       login(res.data.token);
       navigate("/todo");
     } catch (error) {
-      alert("登录失败，请检查用户名和密码！");
+      setError("Invalid email or password");
     }
   };
 
   return (
-    <div>
-      <h2>登录</h2>
-      <input type="text" placeholder="用户名" value={username} onChange={(e) => setUsername(e.target.value)} />
-      <input type="password" placeholder="密码" value={password} onChange={(e) => setPassword(e.target.value)} />
-      <button onClick={handleLogin}>登录</button>
+    <div className="container mt-5" style={{ maxWidth: "400px" }}>
+      <h2 className="mb-4">Login</h2>
+      {error && <p className="text-danger">{error}</p>}
+      <div className="mb-3">
+        <input
+          type="email"
+          className="form-control"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)} 
+        />
+      </div>
+      <div className="mb-3">
+        <input
+          type="password"
+          className="form-control"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+      </div>
+      <button className="btn btn-primary w-100" onClick={handleLogin}>
+        Login
+      </button>
     </div>
   );
 }
