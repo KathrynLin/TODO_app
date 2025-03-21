@@ -138,7 +138,15 @@ function TodoList() {
     <div className="container mt-5">
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h2 className="fw-bold">📝 Todo Dashboard</h2>
-        <button className="btn btn-outline-danger" onClick={logout}>Logout</button>
+        <button 
+          className="btn btn-outline-danger" 
+          onClick={() => {
+            logout();
+            navigate("/login");
+          }}
+        >
+          Logout
+        </button>
       </div>
 
       {/* 搜索 & 筛选 */}
