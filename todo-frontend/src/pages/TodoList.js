@@ -117,6 +117,10 @@ function TodoList() {
   const [showModal, setShowModal] = useState(false);
   const [showCompleted, setShowCompleted] = useState(false);
 
+  const [isBulkMode, setIsBulkMode] = useState(false);
+  const [selectedTaskIds, setSelectedTaskIds] = useState([]);
+
+
   const handleFilterChange = (key, value) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
     setCurrentPage(1); // 重置页码
@@ -208,6 +212,24 @@ function TodoList() {
     }
   };
 
+  const handleBulkDelete = async () => {
+    if (!window.confirm("Are you sure you want to delete selected tasks?")) return;
+  
+    try {
+      await axios.delete("http://localhost:5000/api/tasks/bulk/delete", {
+        headers: { Authorization: `Bearer ${token}` },
+        data: { taskIds: selectedTaskIds }
+      });
+  
+      setSelectedTaskIds([]);
+      await fetchTasks();
+    } catch (error) {
+      console.error("Bulk delete failed:", error);
+      setError("Failed to delete selected tasks. Please try again.");
+    }
+  };
+  
+
   const handlePageChange = (e) => {
     const value = e.target.value;
     setPageInput(value);
@@ -250,36 +272,37 @@ function TodoList() {
       setError("Failed to update task status. Please try again.");
     }
   };
+  const handleSelectTask = (taskId) => {
+    setSelectedTaskIds((prev) =>
+      prev.includes(taskId)
+        ? prev.filter((id) => id !== taskId)
+        : [...prev, taskId]
+    );
+  };
+  
 
   return (
     <div className="container mt-5">
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h2 className="fw-bold">📝 Todo Dashboard</h2>
         <div className="d-flex align-items-center gap-3">
-          {/* Completed tasks toggle */}
-          <div className="d-flex align-items-center">
-            <div className="form-check form-switch me-2">
-              <input
-                className="form-check-input"
-                type="checkbox"
-                id="toggleCompleted"
-                checked={showCompleted}
-                onChange={() => {
-                  setShowCompleted(!showCompleted);
-                  setCurrentPage(1);
-                }}
-              />
-              <label className="form-check-label" htmlFor="toggleCompleted">
-                Show Completed Tasks
-              </label>
-            </div>
-          </div>
+
           <Button variant="outline-info" onClick={() => navigate("/calendar")}>
             📅 Calendar View
+          </Button>
+          <Button
+            variant={isBulkMode ? "outline-warning" : "outline-secondary"}
+            onClick={() => {
+              setIsBulkMode(!isBulkMode);
+              setSelectedTaskIds([]); // 每次进入清空
+            }}
+          >
+            {isBulkMode ? "Cancel Bulk Delete" : "🗑️ Bulk Delete"}
           </Button>
           <Button variant="outline-danger" onClick={logout}>
             Logout
           </Button>
+
         </div>
       </div>
 
@@ -332,11 +355,19 @@ function TodoList() {
             <option value="createdAt">Sort by Created Time</option>
           </select>
         </div>
-        <div className="col-md-2">
-          <button className="btn btn-secondary w-100" onClick={fetchTasks}>
-            🔁 Refresh
-          </button>
+        <div className="col-md-2 d-flex align-items-center">
+          <Form.Check
+            type="switch"
+            id="show-completed-switch"
+            label="Show Completed"
+            checked={showCompleted}
+            onChange={() => {
+              setShowCompleted(!showCompleted);
+              setCurrentPage(1); 
+            }}
+          />
         </div>
+
       </div>
 
       {/* Add Task */}
@@ -454,15 +485,25 @@ function TodoList() {
                         )}
                       </div>
                     </div>
-                    <button 
-                      className="btn btn-outline-danger btn-sm ms-3" 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDeleteTask(task._id);
-                      }}
-                    >
-                      🗑
-                    </button>
+                    <div className="ms-3">
+                      {isBulkMode ? (
+                        <Form.Check
+                          type="checkbox"
+                          checked={selectedTaskIds.includes(task._id)}
+                          onChange={() => handleSelectTask(task._id)}
+                        />
+                      ) : (
+                        <button
+                          className="btn btn-outline-danger btn-sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteTask(task._id);
+                          }}
+                        >
+                          🗑
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </li>
               );
@@ -503,6 +544,14 @@ function TodoList() {
           )}
         </>
       )}
+        {isBulkMode && selectedTaskIds.length > 0 && (
+          <div className="fixed-bottom bg-light border-top p-3 d-flex justify-content-between align-items-center">
+            <span>{selectedTaskIds.length} task(s) selected</span>
+            <Button variant="danger" onClick={handleBulkDelete}>
+              🔥 Confirm Delete
+            </Button>
+          </div>
+        )}
 
       {/* Task Detail Modal */}
       <TaskDetailModal
@@ -524,5 +573,8 @@ function TodoList() {
     </div>
   );
 }
+
+
+
 
 export default TodoList;
