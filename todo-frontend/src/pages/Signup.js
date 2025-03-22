@@ -5,9 +5,9 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
 const schema = yup.object().shape({
-  username: yup.string().required("用户名不能为空").min(3, "用户名至少3个字符"),
-  email: yup.string().email("请输入有效的邮箱").required("邮箱不能为空"),
-  password: yup.string().min(6, "密码至少6个字符").required("密码不能为空"),
+  username: yup.string().required("Username is required").min(3, "Username must be at least 3 characters"),
+  email: yup.string().email("Please enter a valid email").required("Email is required"),
+  password: yup.string().min(6, "Password must be at least 6 characters").required("Password is required"),
 });
 
 function Signup() {
@@ -17,30 +17,51 @@ function Signup() {
   const onSubmit = async (data) => {
     try {
       await axios.post("http://localhost:5000/api/auth/register", data);
-      alert("注册成功，请登录！");
+      alert("Registration successful! Please login.");
       navigate("/login");
     } catch (error) {
-      alert("注册失败：" + (error.response?.data?.message || "请检查输入信息"));
+      alert("Registration failed: " + (error.response?.data?.message || "Please check your input"));
     }
   };
 
   return (
-    <div className="container mt-5">
-      <h2>注册</h2>
+    <div className="container mt-5" style={{ maxWidth: "400px" }}>
+      <h2>Sign Up</h2>
       <form onSubmit={handleSubmit(onSubmit)}>
         <div className="mb-3">
-          <input type="text" className="form-control" placeholder="用户名" {...register("username")} />
+          <input 
+            type="text" 
+            className="form-control" 
+            placeholder="Username" 
+            {...register("username")} 
+          />
           <p className="text-danger">{errors.username?.message}</p>
         </div>
         <div className="mb-3">
-          <input type="email" className="form-control" placeholder="邮箱" {...register("email")} />
+          <input 
+            type="email" 
+            className="form-control" 
+            placeholder="Email" 
+            {...register("email")} 
+          />
           <p className="text-danger">{errors.email?.message}</p>
         </div>
         <div className="mb-3">
-          <input type="password" className="form-control" placeholder="密码" {...register("password")} />
+          <input 
+            type="password" 
+            className="form-control" 
+            placeholder="Password" 
+            {...register("password")} 
+          />
           <p className="text-danger">{errors.password?.message}</p>
         </div>
-        <button className="btn btn-primary" type="submit">注册</button>
+        <button className="btn btn-primary w-100" type="submit">
+          Sign Up
+        </button>
+        <div className="text-center mt-3">
+          <span>Already have an account? </span>
+          <a href="/login" className="text-primary">Login</a>
+        </div>
       </form>
     </div>
   );

@@ -49,6 +49,10 @@ function Login() {
       <button className="btn btn-primary w-100" onClick={handleLogin}>
         Login
       </button>
+      <div className="text-center mt-3">
+        <span>Don't have an account? </span>
+        <a href="/signup" className="text-primary">Sign up</a>
+      </div>
     </div>
   );
 }
