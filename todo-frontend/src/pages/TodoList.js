@@ -27,7 +27,7 @@ function TaskDetailModal({ task, show, onClose, onSave, onChange }) {
       </Modal.Header>
       <Modal.Body>
         <Form>
-          <Form.Group className="mb-3">
+          {/* <Form.Group className="mb-3">
             <Form.Label>Title</Form.Label>
             <Form.Control
               value={task.title}
@@ -83,7 +83,71 @@ function TaskDetailModal({ task, show, onClose, onSave, onChange }) {
             label="Completed"
             checked={task.completed}
             onChange={(e) => onChange({ ...task, completed: e.target.checked })}
+          /> */}
+          <Form.Group className="mb-3">
+            <Form.Label htmlFor="task-title">Title</Form.Label>
+            <Form.Control
+              id="task-title"
+              value={task.title}
+              onChange={(e) => onChange({ ...task, title: e.target.value })}
+            />
+          </Form.Group>
+
+          <Form.Group className="mb-3">
+            <Form.Label htmlFor="task-description">Description</Form.Label>
+            <Form.Control
+              id="task-description"
+              as="textarea"
+              rows={2}
+              value={task.description || ""}
+              onChange={(e) => onChange({ ...task, description: e.target.value })}
+            />
+          </Form.Group>
+
+          <Form.Group className="mb-3">
+            <Form.Label htmlFor="task-category">Category</Form.Label>
+            <Form.Select
+              id="task-category"
+              value={task.category}
+              onChange={(e) => onChange({ ...task, category: e.target.value })}
+            >
+              <option value="personal">🏠 Personal</option>
+              <option value="work">💼 Work</option>
+              <option value="shopping">🛒 Shopping</option>
+            </Form.Select>
+          </Form.Group>
+
+          <Form.Group className="mb-3">
+            <Form.Label htmlFor="task-priority">Priority</Form.Label>
+            <Form.Select
+              id="task-priority"
+              value={task.priority}
+              onChange={(e) => onChange({ ...task, priority: e.target.value })}
+            >
+              <option value="low">🟢 Low</option>
+              <option value="medium">🟠 Medium</option>
+              <option value="high">🔴 High</option>
+            </Form.Select>
+          </Form.Group>
+
+          <Form.Group className="mb-3">
+            <Form.Label htmlFor="task-dueDate">Due Date</Form.Label>
+            <Form.Control
+              id="task-dueDate"
+              type="datetime-local"
+              value={formatDateTime(task.dueDate)}
+              onChange={(e) => onChange({ ...task, dueDate: e.target.value })}
+            />
+          </Form.Group>
+
+          <Form.Check
+            type="checkbox"
+            id="task-completed"
+            label="Completed"
+            checked={task.completed}
+            onChange={(e) => onChange({ ...task, completed: e.target.checked })}
           />
+
         </Form>
       </Modal.Body>
       <Modal.Footer>
