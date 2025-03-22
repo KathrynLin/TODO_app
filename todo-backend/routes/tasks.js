@@ -34,14 +34,16 @@ const taskValidationRules = [
 // 获取当前用户的过滤任务
 router.get('/', auth, async (req, res) => {
   try {
-    const { 
-      category, 
-      priority, 
-      completed, 
-      search, 
+    const {
+      category,
+      priority,
+      completed,
+      search,
       sortBy = 'dueDate',
       page = 1,
-      limit = 10
+      limit = 10,
+      dueDate_gte,
+      dueDate_lte
     } = req.query;
 
     const matchStage = { userId: new mongoose.Types.ObjectId(req.user.userId) };
@@ -50,13 +52,19 @@ router.get('/', auth, async (req, res) => {
     if (completed !== undefined) {
       matchStage.completed = completed === 'true';
     } else {
-      matchStage.completed = false; // 默认只查未完成任务
+      matchStage.completed = false;
     }
     if (search) {
       matchStage.$or = [
         { title: { $regex: search, $options: 'i' } },
         { description: { $regex: search, $options: 'i' } }
       ];
+    }
+    if (dueDate_gte && dueDate_lte) {
+      matchStage.dueDate = {
+        $gte: new Date(dueDate_gte),
+        $lte: new Date(dueDate_lte)
+      };
     }
 
     const skip = (parseInt(page) - 1) * parseInt(limit);
@@ -82,7 +90,6 @@ router.get('/', auth, async (req, res) => {
       }
     ];
 
-    // 排序逻辑统一处理：未完成 > 有截止时间 > 优先级 > 截止时间
     if (sortBy === 'priority') {
       pipeline.push({ $sort: { completed: 1, priorityValue: -1, createdAt: -1 } });
     } else if (sortBy === 'createdAt') {
@@ -107,14 +114,14 @@ router.get('/', auth, async (req, res) => {
     });
   } catch (error) {
     console.error('🔥 Fetch Tasks Error:', error);
-    res.status(500).json({ 
-      code: 'FETCH_TASKS_FAILED', 
-      message: '获取任务失败' 
+    res.status(500).json({
+      code: 'FETCH_TASKS_FAILED',
+      message: '获取任务失败'
     });
   }
 });
 
-// ✅ 新增：单独 PATCH 完成状态
+// 新增：单独 PATCH 完成状态
 router.patch('/:id/status', auth, async (req, res) => {
   try {
     const task = await Task.findOneAndUpdate(

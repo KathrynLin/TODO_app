@@ -1,5 +1,5 @@
 import { useState, useEffect, useContext } from "react";
-import { AuthContext } from "../context/AuthContext";
+import { useAuth } from "../context/AuthContext";
 import { getTasks, addTask, updateTask, deleteTask } from "../services/api";
 import { useNavigate } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -95,7 +95,7 @@ function TaskDetailModal({ task, show, onClose, onSave, onChange }) {
 }
 
 function TodoList() {
-  const { token, logout } = useContext(AuthContext);
+  const { token, logout } = useAuth();
   const [tasks, setTasks] = useState([]);
   const [newTask, setNewTask] = useState("");
   const [newCategory, setNewCategory] = useState("personal");
@@ -274,15 +274,12 @@ function TodoList() {
               </label>
             </div>
           </div>
-          <button 
-            className="btn btn-outline-danger" 
-            onClick={() => {
-              logout();
-              navigate("/login");
-            }}
-          >
+          <Button variant="outline-info" onClick={() => navigate("/calendar")}>
+            📅 Calendar View
+          </Button>
+          <Button variant="outline-danger" onClick={logout}>
             Logout
-          </button>
+          </Button>
         </div>
       </div>
 

@@ -2,6 +2,7 @@ import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import axios from "axios";
 
 const schema = yup.object().shape({
@@ -13,12 +14,18 @@ const schema = yup.object().shape({
 function Signup() {
   const { register, handleSubmit, formState: { errors } } = useForm({ resolver: yupResolver(schema) });
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const onSubmit = async (data) => {
     try {
       await axios.post("http://localhost:5000/api/auth/register", data);
-      alert("Registration successful! Please login.");
-      navigate("/login");
+      // 注册成功后自动登录
+      const loginRes = await axios.post("http://localhost:5000/api/auth/login", {
+        email: data.email,
+        password: data.password,
+      });
+      login(loginRes.data.token);
+      navigate("/todo");
     } catch (error) {
       alert("Registration failed: " + (error.response?.data?.message || "Please check your input"));
     }
