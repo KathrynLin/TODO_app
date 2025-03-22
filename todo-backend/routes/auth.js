@@ -25,9 +25,11 @@ router.post('/register', async (req, res) => {
     await user.save();
     res.status(201).json({ message: "User created" });
     
-  } catch (err) {
+  } catch (error) {
+    console.error("🔥 Auth Register Error:", error);  // ← 加上这个！
     res.status(500).json({ error: "Server error" });
   }
+  
 });
 
 // 用户登录
