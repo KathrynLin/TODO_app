@@ -47,7 +47,11 @@ router.get('/', auth, async (req, res) => {
     const matchStage = { userId: new mongoose.Types.ObjectId(req.user.userId) };
     if (category) matchStage.category = category;
     if (priority) matchStage.priority = priority;
-    if (completed !== undefined) matchStage.completed = completed === 'true';
+    if (completed !== undefined) {
+      matchStage.completed = completed === 'true';
+    } else {
+      matchStage.completed = false; // 默认只查未完成任务
+    }
     if (search) {
       matchStage.$or = [
         { title: { $regex: search, $options: 'i' } },
@@ -55,9 +59,11 @@ router.get('/', auth, async (req, res) => {
       ];
     }
 
-    let sortStage;
-    if (sortBy === 'priority') {
-      sortStage = {
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+
+    const pipeline = [
+      { $match: matchStage },
+      {
         $addFields: {
           priorityValue: {
             $switch: {
@@ -68,33 +74,21 @@ router.get('/', auth, async (req, res) => {
               ],
               default: 0
             }
-          }
-        }
-      };
-    } else if (sortBy === 'dueDate') {
-      sortStage = {
-        $addFields: {
+          },
           hasDueDate: {
             $cond: [{ $ifNull: ["$dueDate", false] }, 1, 0]
           }
         }
-      };
-    }
-
-    const skip = (parseInt(page) - 1) * parseInt(limit);
-
-    const pipeline = [
-      { $match: matchStage },
+      }
     ];
 
+    // 排序逻辑统一处理：未完成 > 有截止时间 > 优先级 > 截止时间
     if (sortBy === 'priority') {
-      pipeline.push(sortStage);
-      pipeline.push({ $sort: { priorityValue: -1 } });
+      pipeline.push({ $sort: { completed: 1, priorityValue: -1, createdAt: -1 } });
     } else if (sortBy === 'createdAt') {
-      pipeline.push({ $sort: { createdAt: -1 } });
+      pipeline.push({ $sort: { completed: 1, createdAt: -1 } });
     } else {
-      pipeline.push(sortStage);
-      pipeline.push({ $sort: { hasDueDate: -1, dueDate: 1 } });
+      pipeline.push({ $sort: { completed: 1, hasDueDate: -1, dueDate: 1 } });
     }
 
     pipeline.push({ $skip: skip });
@@ -111,13 +105,38 @@ router.get('/', auth, async (req, res) => {
         totalPages: Math.ceil(total / limit)
       }
     });
-
   } catch (error) {
     console.error('🔥 Fetch Tasks Error:', error);
     res.status(500).json({ 
       code: 'FETCH_TASKS_FAILED', 
       message: '获取任务失败' 
     });
+  }
+});
+
+// ✅ 新增：单独 PATCH 完成状态
+router.patch('/:id/status', auth, async (req, res) => {
+  try {
+    const task = await Task.findOneAndUpdate(
+      {
+        _id: req.params.id,
+        userId: req.user.userId
+      },
+      {
+        completed: req.body.completed
+      },
+      {
+        new: true
+      }
+    );
+
+    if (!task) {
+      return res.status(404).json({ code: 'TASK_NOT_FOUND', message: '任务不存在' });
+    }
+
+    res.json({ code: 'TASK_STATUS_UPDATED', data: task });
+  } catch (error) {
+    res.status(500).json({ code: 'UPDATE_STATUS_FAILED', message: '更新状态失败' });
   }
 });
 
@@ -141,21 +160,20 @@ router.post('/', auth, taskValidationRules, async (req, res) => {
     if (!taskData.priority) taskData.priority = 'medium';
 
     const task = await Task.create(taskData);
-    
+
     res.status(201).json({
       code: 'TASK_CREATED',
       data: task
     });
 
   } catch (error) {
-    console.error('🔥 Task creation error:', error); // 👈 添加错误日志
+    console.error('🔥 Task creation error:', error);
     res.status(500).json({
       code: 'CREATE_TASK_FAILED',
       message: '创建任务失败'
     });
   }
 });
-
 
 // 更新任务（全字段验证）
 router.put('/:id', auth, taskValidationRules, async (req, res) => {
@@ -184,16 +202,10 @@ router.put('/:id', auth, taskValidationRules, async (req, res) => {
       });
     }
 
-    res.json({
-      code: 'TASK_UPDATED',
-      data: task
-    });
+    res.json({ code: 'TASK_UPDATED', data: task });
 
   } catch (error) {
-    res.status(500).json({
-      code: 'UPDATE_TASK_FAILED',
-      message: '更新任务失败'
-    });
+    res.status(500).json({ code: 'UPDATE_TASK_FAILED', message: '更新任务失败' });
   }
 });
 
@@ -206,22 +218,13 @@ router.delete('/:id', auth, async (req, res) => {
     });
 
     if (!task) {
-      return res.status(404).json({
-        code: 'TASK_NOT_FOUND',
-        message: '任务不存在或已删除'
-      });
+      return res.status(404).json({ code: 'TASK_NOT_FOUND', message: '任务不存在或已删除' });
     }
 
-    res.json({
-      code: 'TASK_DELETED',
-      data: task
-    });
+    res.json({ code: 'TASK_DELETED', data: task });
 
   } catch (error) {
-    res.status(500).json({
-      code: 'DELETE_TASK_FAILED',
-      message: '删除任务失败'
-    });
+    res.status(500).json({ code: 'DELETE_TASK_FAILED', message: '删除任务失败' });
   }
 });
 
@@ -231,11 +234,9 @@ router.get('/stats', auth, async (req, res) => {
     const userId = req.user.userId;
 
     if (!mongoose.Types.ObjectId.isValid(userId)) {
-      return res.status(400).json({
-        code: 'INVALID_USER_ID',
-        message: '用户ID无效'
-      });
+      return res.status(400).json({ code: 'INVALID_USER_ID', message: '用户ID无效' });
     }
+
     const stats = await Task.aggregate([
       { $match: { userId: new mongoose.Types.ObjectId(userId) } },
       {
@@ -278,14 +279,10 @@ router.get('/stats', auth, async (req, res) => {
     });
 
   } catch (error) {
-    console.error('🔥 Stats Error:', error); // 添加调试信息
-    res.status(500).json({
-      code: 'STATS_FAILED',
-      message: '获取统计信息失败'
-    });
+    console.error('🔥 Stats Error:', error);
+    res.status(500).json({ code: 'STATS_FAILED', message: '获取统计信息失败' });
   }
 });
-
 
 // 批量删除任务
 router.delete('/bulk/delete', auth, async (req, res) => {
@@ -293,10 +290,7 @@ router.delete('/bulk/delete', auth, async (req, res) => {
     const { taskIds } = req.body;
 
     if (!Array.isArray(taskIds) || taskIds.length === 0) {
-      return res.status(400).json({
-        code: 'INVALID_REQUEST',
-        message: '需要提供有效的任务ID数组'
-      });
+      return res.status(400).json({ code: 'INVALID_REQUEST', message: '需要提供有效的任务ID数组' });
     }
 
     const result = await Task.deleteMany({
@@ -304,18 +298,10 @@ router.delete('/bulk/delete', auth, async (req, res) => {
       userId: req.user.userId
     });
 
-    res.json({
-      code: 'BULK_DELETE_SUCCESS',
-      data: {
-        deletedCount: result.deletedCount
-      }
-    });
+    res.json({ code: 'BULK_DELETE_SUCCESS', data: { deletedCount: result.deletedCount } });
 
   } catch (error) {
-    res.status(500).json({
-      code: 'BULK_DELETE_FAILED',
-      message: '批量删除失败'
-    });
+    res.status(500).json({ code: 'BULK_DELETE_FAILED', message: '批量删除失败' });
   }
 });
 
