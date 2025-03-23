@@ -12,9 +12,9 @@ function TaskDetailModal({ task, show, onClose, onSave, onChange }) {
   if (!task) return null;
 
   const formatDateTime = (dateString) => {
-    if (!dateString) return "";
     return dayjs(dateString).format("YYYY-MM-DDTHH:mm");
   };
+  
 
   return (
     <Modal show={show} onHide={onClose}>
@@ -133,7 +133,7 @@ function TaskDetailModal({ task, show, onClose, onSave, onChange }) {
               type="datetime-local"
               value={formatDateTime(task.dueDate)}
               onChange={(e) =>
-                onChange({ ...task, dueDate: new Date(e.target.value).toISOString() })
+                onChange({ ...task, dueDate: new Date(e.target.value) })
               }
             />
           </Form.Group>
@@ -246,9 +246,9 @@ function TodoList() {
         category: newCategory,
         priority: newPriority,
       };
-      
+
       if (newDueDate) {
-        taskData.dueDate = new Date(newDueDate).toISOString();
+        taskData.dueDate = new Date(newDueDate)
       }
       
   
