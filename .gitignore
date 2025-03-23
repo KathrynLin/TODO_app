@@ -1,4 +1,3 @@
 # Ignore backend environment variables
-backend/.env
-
+todolist.pem
 todo-backend/.env
