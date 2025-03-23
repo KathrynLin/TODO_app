@@ -196,4 +196,4 @@ March 23, 2025
 
 ## License
 
-MIT © 2025 Your Name
+Fangqing Lin © 2025
