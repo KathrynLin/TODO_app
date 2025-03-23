@@ -136,7 +136,12 @@ function TaskDetailModal({ task, show, onClose, onSave, onChange }) {
               id="task-dueDate"
               type="datetime-local"
               value={formatDateTime(task.dueDate)}
-              onChange={(e) => onChange({ ...task, dueDate: e.target.value })}
+              // onChange={(e) => onChange({ ...task, dueDate: e.target.value })}
+              onChange={(e) => {
+                const localDate = new Date(e.target.value);
+                const utcDate = new Date(localDate.getTime() - localDate.getTimezoneOffset() * 60000);
+                onChange({ ...task, dueDate: utcDate.toISOString() });
+              }}
             />
           </Form.Group>
 
@@ -250,7 +255,10 @@ function TodoList() {
       };
   
       if (newDueDate) {
-        taskData.dueDate = newDueDate;
+        // taskData.dueDate = newDueDate;
+        const localDate = new Date(newDueDate);
+        const utcDate = new Date(localDate.getTime() - localDate.getTimezoneOffset() * 60000);
+        taskData.dueDate = utcDate.toISOString();
       }
   
       // 使用封装后的 addTask 方法
