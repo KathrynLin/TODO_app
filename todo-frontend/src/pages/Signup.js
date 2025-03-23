@@ -4,6 +4,7 @@ import * as yup from "yup";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import axios from "axios";
+import { register as registerUser, login as loginUser } from "../services/api";
 
 const schema = yup.object().shape({
   username: yup.string().required("Username is required").min(3, "Username must be at least 3 characters"),
@@ -18,9 +19,8 @@ function Signup() {
 
   const onSubmit = async (data) => {
     try {
-      await axios.post("http://localhost:5000/api/auth/register", data);
-      // 注册成功后自动登录
-      const loginRes = await axios.post("http://localhost:5000/api/auth/login", {
+      await registerUser(data);
+      const loginRes = await loginUser({
         email: data.email,
         password: data.password,
       });
@@ -30,6 +30,7 @@ function Signup() {
       alert("Registration failed: " + (error.response?.data?.message || "Please check your input"));
     }
   };
+  
 
   return (
     <div className="container mt-5" style={{ maxWidth: "400px" }}>

@@ -1,6 +1,6 @@
 import { useState, useEffect, useContext } from "react";
 import { useAuth } from "../context/AuthContext";
-import { getTasks, addTask, updateTask, deleteTask } from "../services/api";
+import { getTasks, addTask, updateTask, deleteTask, bulkDeleteTasks } from "../services/api";
 import { useNavigate } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import axios from "axios";
@@ -208,14 +208,15 @@ function TodoList() {
       queryParams.append("page", currentPage);
       queryParams.append("limit", 10);
   
-      const url = `http://localhost:5000/api/tasks?${queryParams.toString()}`;
+      // const url = `http://localhost:5000/api/tasks?${queryParams.toString()}`;
       console.log("Fetching tasks with showCompleted =", showCompleted);
-      console.log("Request URL:", url);
+      // console.log("Request URL:", url);
   
-      const res = await axios.get(url, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-  
+      // const res = await axios.get(url, {
+      //   headers: { Authorization: `Bearer ${token}` }
+      // });
+      const res = await getTasks(token, queryParams.toString());
+
       setTasks(res.data.data);
       setTotalPages(res.data.pagination.totalPages);
     } catch (error) {
@@ -234,6 +235,7 @@ function TodoList() {
   
   
 
+
   const handleAddTask = async () => {
     if (!newTask.trim()) {
       setError("Task title cannot be empty.");
@@ -246,14 +248,13 @@ function TodoList() {
         category: newCategory,
         priority: newPriority,
       };
-
+  
       if (newDueDate) {
         taskData.dueDate = newDueDate;
       }
-
-      await axios.post("http://localhost:5000/api/tasks", taskData, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+  
+      // 使用封装后的 addTask 方法
+      await addTask(taskData, token);
   
       await fetchTasks();
       setNewTask("");
@@ -266,6 +267,7 @@ function TodoList() {
       setError("Failed to add task. Please try again.");
     }
   };
+  
 
   const handleDeleteTask = async (taskId) => {
     try {
@@ -275,16 +277,11 @@ function TodoList() {
       setError("Failed to delete task.");
     }
   };
-
   const handleBulkDelete = async () => {
     if (!window.confirm("Are you sure you want to delete selected tasks?")) return;
   
     try {
-      await axios.delete("http://localhost:5000/api/tasks/bulk/delete", {
-        headers: { Authorization: `Bearer ${token}` },
-        data: { taskIds: selectedTaskIds }
-      });
-  
+      await bulkDeleteTasks(selectedTaskIds, token);
       setSelectedTaskIds([]);
       await fetchTasks();
     } catch (error) {
@@ -292,6 +289,7 @@ function TodoList() {
       setError("Failed to delete selected tasks. Please try again.");
     }
   };
+  
   
 
   const handlePageChange = (e) => {
@@ -325,17 +323,20 @@ function TodoList() {
 
   const handleToggleTask = async (task) => {
     try {
-      await axios.patch(`http://localhost:5000/api/tasks/${task._id}/status`, {
-        completed: !task.completed
-      }, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      // 用封装的 updateTask 方法，传入任务 id 和新状态
+      await updateTask(
+        task._id,
+        { completed: !task.completed },
+        token
+      );
+  
       await fetchTasks();
     } catch (error) {
       console.error("Toggle task error:", error);
       setError("Failed to update task status. Please try again.");
     }
   };
+  
   const handleSelectTask = (taskId) => {
     setSelectedTaskIds((prev) =>
       prev.includes(taskId)

@@ -6,6 +6,7 @@ import axios from "axios";
 import dayjs from "dayjs";
 import { useNavigate } from "react-router-dom";
 import { Button } from "react-bootstrap";
+import { getTasks } from "../services/api";
 
 function CalendarView() {
   const { token, logout } = useAuth();
@@ -21,13 +22,10 @@ function CalendarView() {
     const end = dayjs(date).endOf("month").toISOString();
 
     try {
-      const res = await axios.get("http://localhost:5000/api/tasks", {
-        headers: { Authorization: `Bearer ${token}` },
-        params: {
-          dueDate_gte: start,
-          dueDate_lte: end,
-          limit: 1000
-        }
+      const res = await getTasks(token, {
+        dueDate_gte: start,
+        dueDate_lte: end,
+        limit: 1000
       });
 
       const dates = res.data.data.map(task => dayjs(task.dueDate).format("YYYY-MM-DD"));
@@ -44,13 +42,18 @@ function CalendarView() {
     const end = dayjs(date).endOf("day").toISOString();
 
     try {
-      const res = await axios.get("http://localhost:5000/api/tasks", {
-        headers: { Authorization: `Bearer ${token}` },
-        params: {
-          dueDate_gte: start,
-          dueDate_lte: end,
-          limit: 100
-        }
+      // const res = await axios.get("http://localhost:5000/api/tasks", {
+      //   headers: { Authorization: `Bearer ${token}` },
+      //   params: {
+      //     dueDate_gte: start,
+      //     dueDate_lte: end,
+      //     limit: 100
+      //   }
+      // });
+      const res = await getTasks(token, {
+        dueDate_gte: start,
+        dueDate_lte: end,
+        limit: 100
       });
       setTasks(res.data.data || []);
     } catch (err) {
