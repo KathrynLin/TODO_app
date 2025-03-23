@@ -25,8 +25,10 @@ function CalendarView() {
 
   
   const fetchMonthlyTaskDates = useCallback(async (date) => {
-    const { start, end } = getUTCStartAndEnd(dayjs(date).startOf("month"));
-
+    const monthStart = dayjs(date).startOf("month");
+    const monthEnd = dayjs(date).endOf("month");
+    const start = monthStart.utc().startOf("day").toISOString();
+    const end = monthEnd.utc().endOf("day").toISOString();
 
     try {
       // const res = await getTasks(token, {
@@ -45,7 +47,9 @@ function CalendarView() {
       });
   
       const res = await getTasks(token, queryParams.toString());
-      const dates = res.data.data.map(task => dayjs(task.dueDate).format("YYYY-MM-DD"));
+      const dates = res.data.data.map(task =>
+        dayjs(task.dueDate).local().format("YYYY-MM-DD")
+      );
       setTaskDates(dates);
 
 
