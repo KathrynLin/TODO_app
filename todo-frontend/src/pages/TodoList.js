@@ -131,7 +131,7 @@ function TaskDetailModal({ task, show, onClose, onSave, onChange }) {
             <Form.Control
               id="task-dueDate"
               type="datetime-local"
-              value={formatDateTime(task.dueDate)}
+              value={dayjs(task.dueDate).format("YYYY-MM-DDTHH:mm")}
               onChange={(e) =>
                 onChange({ ...task, dueDate: new Date(e.target.value) })
               }
