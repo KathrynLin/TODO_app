@@ -1,6 +1,6 @@
 import { useState, useEffect, useContext } from "react";
 import { useAuth } from "../context/AuthContext";
-import { getTasks, addTask, updateTask, deleteTask, bulkDeleteTasks } from "../services/api";
+import { getTasks, addTask, updateTask, deleteTask, bulkDeleteTasks, toggleTaskStatus } from "../services/api";
 import { useNavigate } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import axios from "axios";
@@ -323,13 +323,7 @@ function TodoList() {
 
   const handleToggleTask = async (task) => {
     try {
-      // 用封装的 updateTask 方法，传入任务 id 和新状态
-      await updateTask(
-        task._id,
-        { completed: !task.completed },
-        token
-      );
-  
+      await toggleTaskStatus(task._id, !task.completed, token);
       await fetchTasks();
     } catch (error) {
       console.error("Toggle task error:", error);

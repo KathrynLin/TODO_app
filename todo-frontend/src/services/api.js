@@ -20,3 +20,8 @@ export const bulkDeleteTasks = (taskIds, token) =>
       data: { taskIds },
     });
   
+export const toggleTaskStatus = (id, completed, token) =>
+    axios.patch(`${API_BASE_URL}/tasks/${id}/status`, { completed }, {
+        headers: { Authorization: `Bearer ${token}` }
+    });
+      
