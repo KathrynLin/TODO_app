@@ -256,7 +256,7 @@ function TodoList() {
       };
 
       if (newDueDate) {
-        taskData.dueDate = toLocalISOString(newDueDate);
+        taskData.dueDate = dayjs(newDueDate).format();
       }
       
       
