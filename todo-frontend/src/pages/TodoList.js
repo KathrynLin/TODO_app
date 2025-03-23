@@ -8,6 +8,11 @@ import { useCallback } from "react";
 import { Modal, Button, Form } from "react-bootstrap";
 import dayjs from 'dayjs';
 
+const toLocalISOString = (datetimeLocalStr) => {
+  const date = new Date(datetimeLocalStr);
+  return new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString();
+};
+
 function TaskDetailModal({ task, show, onClose, onSave, onChange }) {
   if (!task) return null;
 
@@ -129,12 +134,16 @@ function TaskDetailModal({ task, show, onClose, onSave, onChange }) {
           <Form.Group className="mb-3">
             <Form.Label htmlFor="task-dueDate">Due Date</Form.Label>
             <Form.Control
-              id="task-dueDate"
-              type="datetime-local"
-              value={dayjs(task.dueDate).format("YYYY-MM-DDTHH:mm")}
-              onChange={(e) => onChange({ ...task, dueDate: e.target.value })}
+                id="task-dueDate"
+                type="datetime-local"
+                value={dayjs(task.dueDate).format("YYYY-MM-DDTHH:mm")}
+                onChange={(e) => {
+                  const datetimeStr = e.target.value;
+                  const utcISOString = toLocalISOString(datetimeStr);
+                  onChange({ ...task, dueDate: utcISOString });
+                }}
+              />
 
-            />
           </Form.Group>
 
           <Form.Check
@@ -247,8 +256,9 @@ function TodoList() {
       };
 
       if (newDueDate) {
-        taskData.dueDate = newDueDate; 
+        taskData.dueDate = toLocalISOString(newDueDate);
       }
+      
       
   
       // 使用封装后的 addTask 方法
