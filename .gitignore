@@ -1,3 +1,9 @@
 # Ignore backend environment variables
 todolist.pem
 todo-backend/.env
+todo-frontend/.env
+todo-backend/.DS_Store
+todo-frontend/.DS_Store
+~$ALLENGE -BACK END DEVELOPER 2025.docx
+CHALLENGE -BACK END DEVELOPER 2025.docx
+.DS_Store
