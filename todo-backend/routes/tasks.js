@@ -5,6 +5,7 @@ const Task = require('../models/Task');
 const auth = require('../middleware/auth');
 const mongoose = require('mongoose');
 
+
 // 任务数据验证规则
 const taskValidationRules = [
   body('title')
@@ -235,62 +236,16 @@ router.delete('/:id', auth, async (req, res) => {
   }
 });
 
-// 任务统计接口
-router.get('/stats', auth, async (req, res) => {
+
+router.get('/all', auth, async (req, res) => {
   try {
-    const userId = req.user.userId;
-
-    if (!mongoose.Types.ObjectId.isValid(userId)) {
-      return res.status(400).json({ code: 'INVALID_USER_ID', message: '用户ID无效' });
-    }
-
-    const stats = await Task.aggregate([
-      { $match: { userId: new mongoose.Types.ObjectId(userId) } },
-      {
-        $group: {
-          _id: null,
-          total: { $sum: 1 },
-          completed: { $sum: { $cond: ["$completed", 1, 0] } },
-          highPriority: { 
-            $sum: { 
-              $cond: [ { $eq: ["$priority", "high"] }, 1, 0 ] 
-            }
-          },
-          overdue: {
-            $sum: {
-              $cond: [
-                { 
-                  $and: [
-                    { $ne: ["$dueDate", null] },
-                    { $lt: ["$dueDate", new Date()] },
-                    { $eq: ["$completed", false] }
-                  ]
-                },
-                1,
-                0
-              ]
-            }
-          }
-        }
-      }
-    ]);
-
-    res.json({
-      code: 'STATS_SUCCESS',
-      data: {
-        total: stats[0]?.total || 0,
-        completed: stats[0]?.completed || 0,
-        highPriority: stats[0]?.highPriority || 0,
-        overdue: stats[0]?.overdue || 0
-      }
-    });
-
-  } catch (error) {
-    console.error('🔥 Stats Error:', error);
-    res.status(500).json({ code: 'STATS_FAILED', message: '获取统计信息失败' });
+    const tasks = await Task.find({ userId: req.user.userId });
+    res.json({ code: 'TASKS_ALL_SUCCESS', data: tasks });
+  } catch (err) {
+    console.error('🔥 Fetch all tasks error:', err);
+    res.status(500).json({ code: 'FETCH_ALL_FAILED', message: '加载全部任务失败' });
   }
 });
-
 // 批量删除任务
 router.delete('/bulk/delete', auth, async (req, res) => {
   try {

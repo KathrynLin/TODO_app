@@ -18,10 +18,13 @@ export const bulkDeleteTasks = (taskIds, token) =>
     axios.delete(`${API_BASE_URL}/tasks/bulk/delete`, {
       headers: { Authorization: `Bearer ${token}` },
       data: { taskIds },
-    });
-  
+    }); 
 export const toggleTaskStatus = (id, completed, token) =>
     axios.patch(`${API_BASE_URL}/tasks/${id}/status`, { completed }, {
         headers: { Authorization: `Bearer ${token}` }
+    });  
+export const getTaskStats = (token) =>
+    axios.get(`${API_BASE_URL}/tasks/stats`, {
+        headers: { Authorization: `Bearer ${token}` },
     });
-      
+    

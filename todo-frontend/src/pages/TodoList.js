@@ -9,6 +9,7 @@ import { Modal, Button, Form } from "react-bootstrap";
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
+import StatsPanel from "./StatsPanel";
 
 
 dayjs.extend(utc);
@@ -359,6 +360,8 @@ function TodoList() {
 
   return (
     <div className="container mt-5">
+      <StatsPanel />
+
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h2 className="fw-bold">📝 Todo Dashboard</h2>
         <div className="d-flex align-items-center gap-3">
