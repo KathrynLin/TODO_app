@@ -256,9 +256,8 @@ function TodoList() {
   
       if (newDueDate) {
         // taskData.dueDate = newDueDate;
-        const localDate = new Date(newDueDate);
-        const utcDate = new Date(localDate.getTime() - localDate.getTimezoneOffset() * 60000);
-        taskData.dueDate = utcDate.toISOString();
+
+        taskData.dueDate = new Date(newDueDate).toISOString();
       }
   
       // 使用封装后的 addTask 方法
