@@ -136,12 +136,8 @@ function TaskDetailModal({ task, show, onClose, onSave, onChange }) {
             <Form.Control
                 id="task-dueDate"
                 type="datetime-local"
-                value={dayjs(task.dueDate).format("YYYY-MM-DDTHH:mm")}
-                onChange={(e) => {
-                  const datetimeStr = e.target.value;
-                  const utcISOString = toLocalISOString(datetimeStr);
-                  onChange({ ...task, dueDate: utcISOString });
-                }}
+                value={task.dueDate || ""}
+                onChange={(e) => onChange({ ...task, dueDate: e.target.value })}
               />
 
           </Form.Group>
@@ -256,7 +252,7 @@ function TodoList() {
       };
 
       if (newDueDate) {
-        taskData.dueDate = dayjs(newDueDate).format();
+        taskData.dueDate = newDueDate;
       }
       
       
