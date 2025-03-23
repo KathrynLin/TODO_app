@@ -18,8 +18,8 @@ function CalendarView() {
   const navigate = useNavigate();
 
   const fetchMonthlyTaskDates = useCallback(async (date) => {
-    const start = dayjs(date).startOf("month").toISOString();
-    const end = dayjs(date).endOf("month").toISOString();
+    const start = dayjs(date).startOf("month").format("YYYY-MM-DDT00:00:00");
+    const end = dayjs(date).endOf("month").format("YYYY-MM-DDT23:59:59");
 
     try {
       // const res = await getTasks(token, {
@@ -50,8 +50,8 @@ function CalendarView() {
   const fetchTasksForDate = useCallback(async (date) => {
     setLoading(true);
     setError("");
-    const start = dayjs(date).startOf("day").toISOString();
-    const end = dayjs(date).endOf("day").toISOString();
+    const start = dayjs(date).format("YYYY-MM-DDT00:00:00");
+    const end = dayjs(date).format("YYYY-MM-DDT23:59:59");
 
     try {
       // const res = await axios.get("http://localhost:5000/api/tasks", {
