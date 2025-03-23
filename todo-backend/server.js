@@ -8,7 +8,7 @@ const app = express();
 // CORS 设置（允许 Vercel 前端访问）
 app.use(cors({
   origin: [
-    "https://todo-app-inky-five-29.vercel.app", 
+    "https://todo-app-sand-zeta-37.vercel.app", 
     "http://localhost:3000" // 本地测试也允许
   ],
   credentials: true
