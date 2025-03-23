@@ -132,9 +132,8 @@ function TaskDetailModal({ task, show, onClose, onSave, onChange }) {
               id="task-dueDate"
               type="datetime-local"
               value={dayjs(task.dueDate).format("YYYY-MM-DDTHH:mm")}
-              onChange={(e) =>
-                onChange({ ...task, dueDate: new Date(e.target.value) })
-              }
+              onChange={(e) => onChange({ ...task, dueDate: e.target.value })}
+
             />
           </Form.Group>
 
@@ -248,7 +247,7 @@ function TodoList() {
       };
 
       if (newDueDate) {
-        taskData.dueDate = new Date(newDueDate)
+        taskData.dueDate = newDueDate; 
       }
       
   
