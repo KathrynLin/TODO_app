@@ -8,6 +8,12 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "react-bootstrap";
 import { getTasks } from "../services/api";
 
+const getUTCStartAndEnd = (date) => {
+  const start = new Date(dayjs(date).startOf("day").toDate()).toISOString();
+  const end = new Date(dayjs(date).endOf("day").toDate()).toISOString();
+  return { start, end };
+};
+
 function CalendarView() {
   const { token, logout } = useAuth();
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -17,9 +23,10 @@ function CalendarView() {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
+  
   const fetchMonthlyTaskDates = useCallback(async (date) => {
-    const start = dayjs(date).startOf("month").format("YYYY-MM-DDT00:00:00");
-    const end = dayjs(date).endOf("month").format("YYYY-MM-DDT23:59:59");
+    const { start, end } = getUTCStartAndEnd(dayjs(date).startOf("month"));
+
 
     try {
       // const res = await getTasks(token, {
@@ -50,8 +57,8 @@ function CalendarView() {
   const fetchTasksForDate = useCallback(async (date) => {
     setLoading(true);
     setError("");
-    const start = dayjs(date).format("YYYY-MM-DDT00:00:00");
-    const end = dayjs(date).format("YYYY-MM-DDT23:59:59");
+    const { start, end } = getUTCStartAndEnd(date);
+
 
     try {
       // const res = await axios.get("http://localhost:5000/api/tasks", {
