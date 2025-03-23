@@ -7,6 +7,12 @@ import axios from "axios";
 import { useCallback } from "react";
 import { Modal, Button, Form } from "react-bootstrap";
 import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 const toUTCISOString = (localDateTimeStr) => {
   const date = new Date(localDateTimeStr);
