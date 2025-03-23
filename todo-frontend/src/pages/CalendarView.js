@@ -50,11 +50,13 @@ function CalendarView() {
       //     limit: 100
       //   }
       // });
-      const res = await getTasks(token, {
+      const queryParams = new URLSearchParams({
         dueDate_gte: start,
         dueDate_lte: end,
         limit: 100
       });
+      const res = await getTasks(token, queryParams.toString());
+
       setTasks(res.data.data || []);
     } catch (err) {
       console.error("Failed to fetch tasks:", err);
