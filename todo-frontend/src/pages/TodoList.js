@@ -8,10 +8,11 @@ import { useCallback } from "react";
 import { Modal, Button, Form } from "react-bootstrap";
 import dayjs from 'dayjs';
 
-const toLocalISOString = (datetimeLocalStr) => {
-  const date = new Date(datetimeLocalStr);
-  return new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString();
+const toUTCISOString = (localDateTimeStr) => {
+  const date = new Date(localDateTimeStr);
+  return date.toISOString();  // let server store in UTC format
 };
+
 
 function TaskDetailModal({ task, show, onClose, onSave, onChange }) {
   if (!task) return null;
@@ -134,11 +135,16 @@ function TaskDetailModal({ task, show, onClose, onSave, onChange }) {
           <Form.Group className="mb-3">
             <Form.Label htmlFor="task-dueDate">Due Date</Form.Label>
             <Form.Control
-                id="task-dueDate"
-                type="datetime-local"
-                value={task.dueDate || ""}
-                onChange={(e) => onChange({ ...task, dueDate: e.target.value })}
-              />
+              id="task-dueDate"
+              type="datetime-local"
+              value={task.dueDate ? dayjs(task.dueDate).format("YYYY-MM-DDTHH:mm") : ""}
+              onChange={(e) => {
+                const localValue = e.target.value; // e.g., "2025-03-18T03:06"
+                const isoUTC = toUTCISOString(localValue); // convert to UTC for storage
+                onChange({ ...task, dueDate: isoUTC });
+              }}
+            />
+
 
           </Form.Group>
 
@@ -252,7 +258,7 @@ function TodoList() {
       };
 
       if (newDueDate) {
-        taskData.dueDate = newDueDate;
+        taskData.dueDate = toUTCISOString(newDueDate);
       }
       
       
@@ -320,10 +326,11 @@ function TodoList() {
     setShowModal(false);
   };
 
-  const formatDisplayDateTime = (dateString) => {
-    if (!dateString) return "";
-    return dayjs(dateString).format("YYYY-MM-DD HH:mm");
+  const formatDisplayDateTime = (isoString) => {
+    if (!isoString) return "";
+    return dayjs(isoString).local().format("YYYY-MM-DD HH:mm");
   };
+  
 
   const handleToggleTask = async (task) => {
     try {
