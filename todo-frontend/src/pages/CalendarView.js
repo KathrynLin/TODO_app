@@ -22,14 +22,26 @@ function CalendarView() {
     const end = dayjs(date).endOf("month").toISOString();
 
     try {
-      const res = await getTasks(token, {
+      // const res = await getTasks(token, {
+      //   dueDate_gte: start,
+      //   dueDate_lte: end,
+      //   limit: 1000
+      // });
+
+      // const dates = res.data.data.map(task => dayjs(task.dueDate).format("YYYY-MM-DD"));
+      // setTaskDates(dates);
+
+      const queryParams = new URLSearchParams({
         dueDate_gte: start,
         dueDate_lte: end,
         limit: 1000
       });
-
+  
+      const res = await getTasks(token, queryParams.toString());
       const dates = res.data.data.map(task => dayjs(task.dueDate).format("YYYY-MM-DD"));
       setTaskDates(dates);
+
+
     } catch (err) {
       console.error("Failed to fetch monthly tasks:", err);
     }
