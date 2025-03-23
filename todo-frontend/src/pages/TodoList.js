@@ -11,13 +11,9 @@ import dayjs from 'dayjs';
 function TaskDetailModal({ task, show, onClose, onSave, onChange }) {
   if (!task) return null;
 
-  // 格式化日期时间为 datetime-local 格式
   const formatDateTime = (dateString) => {
     if (!dateString) return "";
-    const date = new Date(dateString);
-    const offset = date.getTimezoneOffset();
-    const localDate = new Date(date.getTime() - offset * 60 * 1000);
-    return localDate.toISOString().slice(0, 16); // YYYY-MM-DDTHH:mm
+    return dayjs(dateString).format("YYYY-MM-DDTHH:mm");
   };
 
   return (
@@ -136,12 +132,9 @@ function TaskDetailModal({ task, show, onClose, onSave, onChange }) {
               id="task-dueDate"
               type="datetime-local"
               value={formatDateTime(task.dueDate)}
-              // onChange={(e) => onChange({ ...task, dueDate: e.target.value })}
-              onChange={(e) => {
-                const localDate = new Date(e.target.value);
-                const utcDate = new Date(localDate.getTime() - localDate.getTimezoneOffset() * 60000);
-                onChange({ ...task, dueDate: utcDate.toISOString() });
-              }}
+              onChange={(e) =>
+                onChange({ ...task, dueDate: new Date(e.target.value).toISOString() })
+              }
             />
           </Form.Group>
 
@@ -253,12 +246,11 @@ function TodoList() {
         category: newCategory,
         priority: newPriority,
       };
-  
+      
       if (newDueDate) {
-        // taskData.dueDate = newDueDate;
-
         taskData.dueDate = new Date(newDueDate).toISOString();
       }
+      
   
       // 使用封装后的 addTask 方法
       await addTask(taskData, token);
