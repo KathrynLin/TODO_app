@@ -178,6 +178,12 @@ Now your app is accessible via:
 
 ---
 
+## Demo Video
+Check out the full video at YouTube. You can also play around my app at: https://todo.fangqinglin.com/login
+
+[![Watch the demo](https://img.youtube.com/vi/TSq4lcUaOKg/0.jpg)](https://www.youtube.com/watch?v=TSq4lcUaOKg)
+
+
 ## Testing Tips
 
 1. Register a new user
