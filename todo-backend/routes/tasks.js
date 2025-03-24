@@ -6,33 +6,33 @@ const auth = require('../middleware/auth');
 const mongoose = require('mongoose');
 
 
-// 任务数据验证规则
+
 const taskValidationRules = [
   body('title')
     .trim()
     .isLength({ min: 3 })
-    .withMessage('标题至少需要3个字符'),
+    .withMessage('The title should be at least 3 characters long'),
   body('description')
     .optional()
     .isLength({ max: 500 })
-    .withMessage('描述不能超过500个字符'),
+    .withMessage('The description cannot exceed 500 characters'),
   body('category')
     .isIn(['work', 'personal', 'shopping'])
-    .withMessage('无效的任务分类'),
+    .withMessage('Invalid task classification'),
   body('priority')
     .isIn(['low', 'medium', 'high'])
-    .withMessage('无效的优先级'),
+    .withMessage('Invalid task priority'),
   body('dueDate')
     .optional()
     .isISO8601()
-    .withMessage('无效的日期格式（需ISO8601格式）'),
+    .withMessage('Invalid date format (ISO8601 format required)'),
   body('completed')
     .optional()
     .isBoolean()
-    .withMessage('完成状态必须为布尔值')
+    .withMessage('The completion status must be Boolean')
 ];
 
-// 获取当前用户的过滤任务
+// get all tasks
 router.get('/', auth, async (req, res) => {
   try {
     const {
@@ -122,7 +122,7 @@ router.get('/', auth, async (req, res) => {
   }
 });
 
-// 新增：单独 PATCH 完成状态
+// get task status
 router.patch('/:id/status', auth, async (req, res) => {
   try {
     const task = await Task.findOneAndUpdate(
@@ -148,7 +148,7 @@ router.patch('/:id/status', auth, async (req, res) => {
   }
 });
 
-// 创建新任务（带数据验证）
+// Create a new task (with data validation)
 router.post('/', auth, taskValidationRules, async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -183,7 +183,7 @@ router.post('/', auth, taskValidationRules, async (req, res) => {
   }
 });
 
-// 更新任务（全字段验证）
+// Update task (full field validation)
 router.put('/:id', auth, taskValidationRules, async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -217,7 +217,7 @@ router.put('/:id', auth, taskValidationRules, async (req, res) => {
   }
 });
 
-// 删除单个任务
+// delete task
 router.delete('/:id', auth, async (req, res) => {
   try {
     const task = await Task.findOneAndDelete({
@@ -246,7 +246,7 @@ router.get('/all', auth, async (req, res) => {
     res.status(500).json({ code: 'FETCH_ALL_FAILED', message: '加载全部任务失败' });
   }
 });
-// 批量删除任务
+// bulk delete tasks
 router.delete('/bulk/delete', auth, async (req, res) => {
   try {
     const { taskIds } = req.body;

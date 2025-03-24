@@ -202,7 +202,7 @@ function TodoList() {
 
   const handleFilterChange = (key, value) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
-    setCurrentPage(1); // 重置页码
+    setCurrentPage(1);
   };
 
   const fetchTasks = useCallback(async () => {
@@ -270,7 +270,6 @@ function TodoList() {
       
       
   
-      // 使用封装后的 addTask 方法
       await addTask(taskData, token);
   
       await fetchTasks();
@@ -373,7 +372,7 @@ function TodoList() {
             variant={isBulkMode ? "outline-warning" : "outline-secondary"}
             onClick={() => {
               setIsBulkMode(!isBulkMode);
-              setSelectedTaskIds([]); // 每次进入清空
+              setSelectedTaskIds([]); 
             }}
           >
             {isBulkMode ? "Cancel Bulk Delete" : "🗑️ Bulk Delete"}

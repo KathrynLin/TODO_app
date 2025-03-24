@@ -6,7 +6,7 @@ import { BrowserRouter } from "react-router-dom";
 import axios from "axios";
 import { deleteTask } from "../services/api";
 
-// 👇 mock services/api 里的所有函数
+// mock services/api functions
 jest.mock("../services/api", () => ({
   updateTask: jest.fn(() => Promise.resolve()),
   deleteTask: jest.fn(() => Promise.resolve()),
@@ -14,10 +14,9 @@ jest.mock("../services/api", () => ({
   addTask: jest.fn(() => Promise.resolve()),
 }));
 
-// 👇 导入 mock 后的函数用于 expect
 import { updateTask } from "../services/api";
 
-// mock axios 也保留
+
 jest.mock("axios");
 
 const renderWithAuth = (ui) => {
@@ -124,7 +123,7 @@ it("opens and saves task changes in modal", async () => {
   fireEvent.click(getByText("Save"));
 
   await waitFor(() => {
-    expect(updateTask).toHaveBeenCalled();  // 使用正确的 mock 函数断言
+    expect(updateTask).toHaveBeenCalled();  
   });
 });
 
@@ -145,7 +144,7 @@ it("deletes a task", async () => {
     },
   });
 
-  deleteTask.mockResolvedValue({}); // mock services/api 的 deleteTask
+  deleteTask.mockResolvedValue({}); // mock services/api: deleteTask
 
   renderWithAuth(<TodoList />);
 
@@ -157,6 +156,6 @@ it("deletes a task", async () => {
   fireEvent.click(deleteButton);
 
   await waitFor(() => {
-    expect(deleteTask).toHaveBeenCalled(); // ✅ 改为断言 deleteTask
+    expect(deleteTask).toHaveBeenCalled(); 
   });
 });

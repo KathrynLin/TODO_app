@@ -5,17 +5,17 @@ const User = require('../models/User');
 
 const router = express.Router();
 
-// 用户注册
+// register a new user
 router.post('/register', async (req, res) => {
   try {
     const { username, email, password } = req.body;
 
-    // 检查邮箱是否已存在
+    // check if user exists
     if (await User.findOne({ email })) {
       return res.status(400).json({ error: "Email already exists" });
     }
 
-    // 创建用户
+    // create a new user
     const user = new User({
       username,
       email,
@@ -32,18 +32,17 @@ router.post('/register', async (req, res) => {
   
 });
 
-// 用户登录
+// login a user
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
     const user = await User.findOne({ email });
 
-    // 验证用户
     if (!user || !(await bcrypt.compare(password, user.password))) {
       return res.status(401).json({ error: "Invalid credentials" });
     }
 
-    // 生成Token
+    // create a JWT token
     const token = jwt.sign(
       { userId: user._id }, 
       process.env.JWT_SECRET, 
